@@ -10,12 +10,12 @@ class UsuarioController extends Usuario implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $usuario = $parametros['usuario'];
-    $clave = $parametros['clave'];
-    
+    $categoria = strtolower($parametros['categoria']);
+
     // Creamos el usuario
     $usr = new Usuario();
     $usr->usuario = $usuario;
-    $usr->clave = $clave;
+    $usr->categoria = $categoria;
     $usr->crearUsuario();
 
     $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
@@ -31,7 +31,7 @@ class UsuarioController extends Usuario implements IApiUsable
     $usr = $args['usuario'];
     $usuario = Usuario::obtenerUsuario($usr);
     $payload = json_encode($usuario);
-    
+
     if ($payload != "false") {
       if (Usuario::estaActivo($usr)) {
         $response->getBody()->write($payload);
@@ -60,12 +60,14 @@ class UsuarioController extends Usuario implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $id = $parametros['id'];
-    $nombre = $parametros['nombre'];
-    $clave = $parametros['clave'];
-    Usuario::modificarUsuario($id, $nombre, $clave);
-
-    $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
-
+    if (Usuario::verificarId($id)) {
+      $usuario = $parametros['usuario'];
+      $categoria = $parametros['categoria'];
+      Usuario::modificarUsuario($id, $usuario, $categoria);
+      $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
+    } else {
+      $payload = json_encode(array("mensaje" => "Error - ID Inexistente"));
+    }
     $response->getBody()->write($payload);
     return $response
       ->withHeader('Content-Type', 'application/json');
@@ -80,7 +82,7 @@ class UsuarioController extends Usuario implements IApiUsable
       if (Usuario::borrarUsuario($usuarioId)) {
         $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
       } else {
-        $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));        
+        $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));
       }
     } else {
       $payload = json_encode(array("mensaje" => "ID inexistente"));

@@ -14,8 +14,10 @@ use Slim\Routing\RouteContext;
 require __DIR__ . '/../vendor/autoload.php';
 
 require_once './db/AccesoDatos.php';
+
 require_once './middlewares/Login.php';
-require_once './middlewares/UsuarioYClaveChecker.php';
+require_once './middlewares/UsuarioYCategoriaChecker.php';
+require_once './middlewares/TipoYDescripcionChecker.php';
 require_once './middlewares/AdminChecker.php';
 require_once './middlewares/IdChecker.php';
 require_once './middlewares/SuperAdminChecker.php';
@@ -23,6 +25,7 @@ require_once './middlewares/Logger.php';
 require_once './middlewares/VerificarToken.php';
 
 require_once './controllers/UsuarioController.php';
+require_once './controllers/ProductoController.php';
 
 // Load ENV
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -37,12 +40,12 @@ $app->addErrorMiddleware(true, true, true);
 // Add parse body
 $app->addBodyParsingMiddleware();
 
-// Routes
+// Usuarios
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->get('[/]', \UsuarioController::class . ':TraerTodos');
   $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
-  $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new AdminCheckerMiddleware())->add(new UsuarioYClaveCheckerMiddleware());
-  $group->put('[/]', \UsuarioController::class . ':ModificarUno');
+  $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new AdminCheckerMiddleware());
+  $group->put('[/]', \UsuarioController::class . ':ModificarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new IdCheckerMiddleware());
   $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new SuperAdminCheckerMiddleware())->add(new IdCheckerMiddleware());
   $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware());
 });
@@ -51,11 +54,19 @@ $app->group('/jwt', function (RouteCollectorProxy $group) {
   $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware());
 })->add(new VerificarTokenMiddleware());
 
+// Producto
+$app->group('/productos', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \ProductoController::class . ':TraerTodos');
+  $group->get('/{id}', \ProductoController::class . ':TraerUno');
+  $group->post('[/]', \ProductoController::class . ':CargarUno')->add(new TipoYDescripcionCheckerMiddleware());
+  $group->put('[/]', \ProductoController::class . ':ModificarUno');
+  $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(new SuperAdminCheckerMiddleware())->add(new IdCheckerMiddleware());  
+});
 
 $app->get(
   '[/]',
   function (Request $request, Response $response) {
-    $payload = json_encode(array("metodo" => $_SERVER["REQUEST_METHOD"], "mensaje" => "Slim Framework 4 PHP - Tomas Perez Ponisio"));
+    $payload = json_encode(array("metodo" => $_SERVER["REQUEST_METHOD"], "mensaje" => "Slim Framework 4 PHP - Tomas Perez Ponisio - La Comanda"));
     sleep(5);
     $response->getBody()->write($payload);
     return $response->withHeader('Content-Type', 'application/json');
@@ -65,7 +76,7 @@ $app->get(
 $app->post(
   '[/]',
   function (Request $request, Response $response) {
-    $payload = json_encode(array("metodo" => $_SERVER["REQUEST_METHOD"], "mensaje" => "Slim Framework 4 PHP - Tomas Perez Ponisio"));
+    $payload = json_encode(array("metodo" => $_SERVER["REQUEST_METHOD"], "mensaje" => "Slim Framework 4 PHP - Tomas Perez Ponisio - La Comanda"));
     sleep(5);
     $response->getBody()->write($payload);
     return $response->withHeader('Content-Type', 'application/json');

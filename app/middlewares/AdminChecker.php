@@ -19,15 +19,12 @@ class AdminCheckerMiddleware
         if ($parametros['perfil'] == "admin") {
           $response = $handler->handle($request);
         } else {
-          // si no es admin le aviso
           $response->getBody()->write("No tiene los permisos para crear un usuario");
         }
       } else {
-        // aviso que vino vacio
         $response->getBody()->write("Error Campo vacio ");
       }
     } else {
-      // aviso que faltaron datos
       $response->getBody()->write("Datos incompletos");
     }
     return $response;

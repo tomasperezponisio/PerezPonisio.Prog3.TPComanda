@@ -12,9 +12,9 @@ class IdCheckerMiddleware
     // traigo los parametros
     $parametros = $request->getParsedBody();
     // me fijo si me mandaron usuario y clave
-    if (isset($parametros['usuarioId']) ) {
+    if (isset($parametros['id']) ) {
       // me fijo que no esten vacios
-      if ($parametros['usuarioId'] != "") {
+      if ($parametros['id'] != "") {
         $response = $handler->handle($request);
       } else {
         $response->getBody()->write("Error Campo vacio ");
