@@ -18,7 +18,7 @@ require_once './db/AccesoDatos.php';
 require_once './middlewares/Login.php';
 require_once './middlewares/UsuarioYCategoriaChecker.php';
 require_once './middlewares/TipoYDescripcionChecker.php';
-require_once './middlewares/AdminChecker.php';
+require_once './middlewares/MozoChecker.php';
 require_once './middlewares/IdChecker.php';
 require_once './middlewares/VerificarToken.php';
 
@@ -44,7 +44,7 @@ $app->addBodyParsingMiddleware();
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->get('[/]', \UsuarioController::class . ':TraerTodos');
   $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
-  $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new AdminCheckerMiddleware());
+  $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new MozoCheckerMiddleware());
   $group->put('[/]', \UsuarioController::class . ':ModificarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new IdCheckerMiddleware());
   $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
   $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware());
@@ -58,9 +58,9 @@ $app->group('/jwt', function (RouteCollectorProxy $group) {
 $app->group('/productos', function (RouteCollectorProxy $group) {
   $group->get('[/]', \ProductoController::class . ':TraerTodos');
   $group->get('/{id}', \ProductoController::class . ':TraerUno');
-  $group->post('[/]', \ProductoController::class . ':CargarUno')->add(new TipoYDescripcionCheckerMiddleware());
+  $group->post('[/]', \ProductoController::class . ':CargarUno')->add(new VerificarTokenMiddleware());
   $group->put('[/]', \ProductoController::class . ':ModificarUno');
-  $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(new IdCheckerMiddleware());  
+  $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
 });
 
 // Mesa
@@ -69,17 +69,24 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
   $group->get('/{id}', \MesaController::class . ':TraerUno');
   $group->post('[/]', \MesaController::class . ':CargarUno');
   $group->put('[/]', \MesaController::class . ':ModificarUno');
-  $group->delete('[/]', \MesaController::class . ':BorrarUno')->add(new IdCheckerMiddleware());  
+  $group->delete('[/]', \MesaController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
 });
 
 // Pedidos
-$app->group('/usuarios', function (RouteCollectorProxy $group) {
+$app->group('/pedidos', function (RouteCollectorProxy $group) {
   $group->get('[/]', \PedidoController::class . ':TraerTodos');
   $group->get('/{usuario}', \PedidoController::class . ':TraerUno');
-  $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new AdminCheckerMiddleware());
-  $group->put('[/]', \PedidoController::class . ':ModificarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new IdCheckerMiddleware());
-  $group->delete('[/]', \PedidoController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
-  $group->post('/login', \PedidoController::class . ':Login')->add(new LoginMiddleware());
+  $group->post('[/]', \PedidoController::class . ':CargarUno')
+                ->add(new UsuarioYCategoriaCheckerMiddleware())
+                ->add(new MozoCheckerMiddleware())
+                ->add(new VerificarTokenMiddleware());
+  $group->put('[/]', \PedidoController::class . ':ModificarUno')
+                ->add(new UsuarioYCategoriaCheckerMiddleware())
+                ->add(new IdCheckerMiddleware());
+  $group->delete('[/]', \PedidoController::class . ':BorrarUno')
+                ->add(new IdCheckerMiddleware());
+  $group->post('/login', \PedidoController::class . ':Login')
+                ->add(new LoginMiddleware());
 });
 
 $app->get(

@@ -2,17 +2,28 @@
 
 class Usuario
 {
-  // public $id;
+  public $id;
   public $usuario;
-  public $id_categoria;
-  // public $fechaBaja;
+  public $clave;
+  public $id_categoria;  
 
   public function crearUsuario()
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (usuario, id_categoria) VALUES (:usuario, :id_categoria)");
-    
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "INSERT INTO usuarios
+      (usuario,
+      clave,
+      id_categoria)
+      VALUES
+      (:usuario,
+      :clave
+      :id_categoria)"
+    );
+
     $consulta->bindValue(':usuario', $this->usuario, PDO::PARAM_STR);
+    $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
+    $consulta->bindValue(':clave', $claveHash);
     $consulta->bindValue(':id_categoria', $this->id_categoria, PDO::PARAM_INT);
     $consulta->execute();
 
@@ -22,7 +33,13 @@ class Usuario
   public static function obtenerTodos()
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, id_categoria FROM usuarios WHERE fecha_baja IS NULL");
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT
+      usuario,
+      id_categoria
+      FROM usuarios
+      WHERE fecha_baja IS NULL"
+    );
     $consulta->execute();
 
     return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
@@ -31,17 +48,30 @@ class Usuario
   public static function obtenerUsuario($usuario)
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDatos->prepararConsulta("SELECT id, usuario, id_categoria, fecha_baja FROM usuarios WHERE usuario = :usuario");
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT
+      usuario,
+      id_categoria
+      FROM usuarios
+      WHERE usuario = :usuario"
+    );
     $consulta->bindValue(':usuario', $usuario, PDO::PARAM_STR);
     $consulta->execute();
     return $consulta->fetchObject('Usuario');
   }
 
-  public static function modificarUsuario($id, $nombre, $id_categoria)
+  public static function modificarUsuario($id, $usuario, $clave, $id_categoria)
   {
     $objAccesoDato = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDato->prepararConsulta("UPDATE usuarios SET usuario = :usuario, id_categoria = :id_categoria WHERE id = :id");
-    $consulta->bindValue(':usuario', $nombre, PDO::PARAM_STR);
+    $consulta = $objAccesoDato->prepararConsulta(
+      "UPDATE usuarios
+      SET usuario = :usuario,
+      clave = :clave,
+      id_categoria = :id_categoria
+      WHERE id = :id");
+    $consulta->bindValue(':usuario', $usuario, PDO::PARAM_STR);
+    $claveHash = password_hash($clave, PASSWORD_DEFAULT);
+    $consulta->bindValue(':clave', $claveHash);
     $consulta->bindValue(':id_categoria', $id_categoria, PDO::PARAM_STR);
     $consulta->bindValue(':id', $id, PDO::PARAM_INT);
     $consulta->execute();

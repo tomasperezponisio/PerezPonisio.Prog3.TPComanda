@@ -62,8 +62,9 @@ class UsuarioController extends Usuario implements IApiUsable
     $id = $parametros['id'];
     if (Usuario::verificarId($id)) {
       $usuario = $parametros['usuario'];
+      $clave = $parametros['clave'];
       $id_categoria = $parametros['id_categoria'];
-      Usuario::modificarUsuario($id, $usuario, $id_categoria);
+      Usuario::modificarUsuario($id, $usuario, $clave, $id_categoria);
       $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
     } else {
       $payload = json_encode(array("mensaje" => "Error - ID Inexistente"));

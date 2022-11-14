@@ -10,6 +10,8 @@ class VerificarTokenMiddleware
   {
     $response = new Response();
     $esValido = false;
+    $payload = "";
+    $token = "";
 
     try {
       $header = $request->getHeaderLine('Authorization');
