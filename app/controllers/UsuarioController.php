@@ -10,12 +10,12 @@ class UsuarioController extends Usuario implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $usuario = $parametros['usuario'];
-    $categoria = strtolower($parametros['categoria']);
+    $id_categoria = $parametros['id_categoria'];
 
     // Creamos el usuario
     $usr = new Usuario();
     $usr->usuario = $usuario;
-    $usr->categoria = $categoria;
+    $usr->id_categoria = $id_categoria;
     $usr->crearUsuario();
 
     $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
@@ -62,8 +62,8 @@ class UsuarioController extends Usuario implements IApiUsable
     $id = $parametros['id'];
     if (Usuario::verificarId($id)) {
       $usuario = $parametros['usuario'];
-      $categoria = $parametros['categoria'];
-      Usuario::modificarUsuario($id, $usuario, $categoria);
+      $id_categoria = $parametros['id_categoria'];
+      Usuario::modificarUsuario($id, $usuario, $id_categoria);
       $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
     } else {
       $payload = json_encode(array("mensaje" => "Error - ID Inexistente"));

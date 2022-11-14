@@ -1,24 +1,20 @@
 <?php
-require_once './models/Producto.php';
+require_once './models/Mesa.php';
 require_once './interfaces/IApiUsable.php';
 require_once './utils/AutentificadorJWT.php';
 
-class ProductoController extends Producto implements IApiUsable
+class MesaController extends Mesa implements IApiUsable
 {
   public function CargarUno($request, $response, $args)
   {
-    $parametros = $request->getParsedBody();
+    // $parametros = $request->getParsedBody();    
+    // $descripcion = strtolower($parametros['id_estado']);
 
-    $tipo = strtolower($parametros['tipo']);
-    $descripcion = strtolower($parametros['descripcion']);
+    // Creamos la mesa
+    $mesa = new Mesa();    
+    $mesa->crearMesa();
 
-    // Creamos el producto
-    $prod = new Producto();
-    $prod->tipo = $tipo;
-    $prod->descripcion = $descripcion;
-    $prod->crearProducto();
-
-    $payload = json_encode(array("mensaje" => "Producto creado con exito"));
+    $payload = json_encode(array("mensaje" => "Mesa creada con exito"));
 
     $response->getBody()->write($payload);
     return $response
@@ -27,15 +23,15 @@ class ProductoController extends Producto implements IApiUsable
 
   public function TraerUno($request, $response, $args)
   {
-    // Buscamos producto por id
+    // Buscamos mesa por id
     $id = $args['id'];
-    $producto = Producto::obtenerProducto($id);
-    $payload = json_encode($producto);
+    $mesa = Mesa::obtenerMesa($id);
+    $payload = json_encode($mesa);
 
     if ($payload != "false") {
       $response->getBody()->write($payload);
     } else {
-      $response->getBody()->write("Producto inexistente");
+      $response->getBody()->write("Mesa inexistente");
     }
     return $response
       ->withHeader('Content-Type', 'application/json');
@@ -43,8 +39,8 @@ class ProductoController extends Producto implements IApiUsable
 
   public function TraerTodos($request, $response, $args)
   {
-    $lista = Producto::obtenerTodos();
-    $payload = json_encode(array("listaProducto" => $lista));
+    $lista = Mesa::obtenerTodos();
+    $payload = json_encode(array("Lista Mesas" => $lista));
 
     $response->getBody()->write($payload);
     return $response
@@ -56,11 +52,10 @@ class ProductoController extends Producto implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $id = $parametros['id'];
-    $tipo = $parametros['tipo'];
-    $descripcion = $parametros['descripcion'];
-    Producto::modificarProducto($id, $tipo, $descripcion);
+    $id_estado = $parametros['id_estado'];    
+    Mesa::modificarMesa($id, $id_estado);
 
-    $payload = json_encode(array("mensaje" => "Producto modificado con exito"));
+    $payload = json_encode(array("mensaje" => "Estado de mesa modificado con exito"));
 
     $response->getBody()->write($payload);
     return $response
@@ -72,11 +67,11 @@ class ProductoController extends Producto implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $id = $parametros['id'];
-    if (Producto::verificarId($id)) {
-      if (Producto::borrarProducto($id)) {
-        $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
+    if (Mesa::verificarId($id)) {
+      if (Mesa::borrarMesa($id)) {
+        $payload = json_encode(array("mensaje" => "Mesa borrada con exito"));
       } else {
-        $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));
+        $payload = json_encode(array("mensaje" => "Error al borrar la mesa"));
       }
     } else {
       $payload = json_encode(array("mensaje" => "ID inexistente"));

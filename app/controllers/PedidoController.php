@@ -1,24 +1,27 @@
 <?php
-require_once './models/Producto.php';
+require_once './models/Pedido.php';
 require_once './interfaces/IApiUsable.php';
 require_once './utils/AutentificadorJWT.php';
 
-class ProductoController extends Producto implements IApiUsable
+class PedidoController extends Pedido implements IApiUsable
 {
   public function CargarUno($request, $response, $args)
   {
     $parametros = $request->getParsedBody();
 
-    $id_tipo = intval($parametros['id_tipo']);
-    $descripcion = strtolower($parametros['descripcion']);
+    $nombre_cliente = $parametros['nombre_cliente'];
+    $codigo_para_cliente = $parametros['codigo_para_cliente'];
+    // cada pedido comienza con pedido 0 (En preparacion)
+    $id_estado = 0;
 
-    // Creamos el producto
-    $prod = new Producto();
-    $prod->id_tipo = $id_tipo;
-    $prod->descripcion = $descripcion;
-    $prod->crearProducto();
+    // Creamos el pedido
+    $pedido = new Pedido();
+    $pedido->nombre_cliente = $nombre_cliente;
+    $pedido->codigo_para_cliente = $codigo_para_cliente;
+    $pedido->id_estado = $id_estado;
+    $pedido->crearPedido();
 
-    $payload = json_encode(array("mensaje" => "Producto creado con exito"));
+    $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
 
     $response->getBody()->write($payload);
     return $response
@@ -27,15 +30,19 @@ class ProductoController extends Producto implements IApiUsable
 
   public function TraerUno($request, $response, $args)
   {
-    // Buscamos producto por id
+    // Buscamos pedido por id
     $id = $args['id'];
-    $producto = Producto::obtenerProducto($id);
-    $payload = json_encode($producto);
+    $pedido = Pedido::obtenerPedido($id);
+    $payload = json_encode($pedido);
 
     if ($payload != "false") {
-      $response->getBody()->write($payload);
+      if (Pedido::verificarId($id)) {
+        $response->getBody()->write($payload);
+      } else {
+        $response->getBody()->write("Usuario eliminado");
+      }
     } else {
-      $response->getBody()->write("Producto inexistente");
+      $response->getBody()->write("Usuario inexistente");
     }
     return $response
       ->withHeader('Content-Type', 'application/json');
@@ -43,8 +50,8 @@ class ProductoController extends Producto implements IApiUsable
 
   public function TraerTodos($request, $response, $args)
   {
-    $lista = Producto::obtenerTodos();
-    $payload = json_encode(array("listaProducto" => $lista));
+    $lista = Pedido::obtenerTodos();
+    $payload = json_encode(array("lista pedidos" => $lista));
 
     $response->getBody()->write($payload);
     return $response
@@ -56,12 +63,14 @@ class ProductoController extends Producto implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $id = $parametros['id'];
-    $id_tipo = $parametros['id_tipo'];
-    $descripcion = $parametros['descripcion'];
-    Producto::modificarProducto($id, $id_tipo, $descripcion);
-
-    $payload = json_encode(array("mensaje" => "Producto modificado con exito"));
-
+    if (Pedido::verificarId($id)) {
+      $id_estado = $parametros['id_estado'];
+      
+      Pedido::modificarPedido($id, $id_estado);
+      $payload = json_encode(array("mensaje" => "Estado de pedido modificado con exito"));
+    } else {
+      $payload = json_encode(array("mensaje" => "Error - ID Inexistente"));
+    }
     $response->getBody()->write($payload);
     return $response
       ->withHeader('Content-Type', 'application/json');
@@ -71,9 +80,9 @@ class ProductoController extends Producto implements IApiUsable
   {
     $parametros = $request->getParsedBody();
 
-    $id = $parametros['id'];
-    if (Producto::verificarId($id)) {
-      if (Producto::borrarProducto($id)) {
+    $usuarioId = $parametros['usuarioId'];
+    if (Usuario::verificarId($usuarioId)) {
+      if (Usuario::borrarUsuario($usuarioId)) {
         $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
       } else {
         $payload = json_encode(array("mensaje" => "Error al borrar el usuario"));
@@ -85,5 +94,5 @@ class ProductoController extends Producto implements IApiUsable
     return $response
       ->withHeader('Content-Type', 'application/json');
   }
-
+  
 }
