@@ -6,9 +6,9 @@ class Producto
   public $id_tipo;
   public $descripcion;
   public $tiempo_de_finalizacion;
-  public $estado;
+  public $id_estado;
 
-  // por default el tiempo de finalizacion es NULL y el estado 0 ("no ingresado en cocina")
+  // por default el tiempo de finalizacion es NULL y el id_estado 0 ("no ingresado en cocina")
   public function crearProducto()
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
@@ -77,11 +77,11 @@ class Producto
     }
   }
 
-  public function setEstado($id, $estado)
+  public function setEstado($id, $id_estado)
   {
     $objAccesoDato = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET estado = :estado WHERE id = :id");
-    $consulta->bindValue(':estado', $estado, PDO::PARAM_STR);
+    $consulta = $objAccesoDato->prepararConsulta("UPDATE productos SET id_estado = :id_estado WHERE id = :id");
+    $consulta->bindValue(':id_estado', $id_estado, PDO::PARAM_STR);
     $consulta->bindValue(':id', $id, PDO::PARAM_INT);
     $consulta->execute();
 

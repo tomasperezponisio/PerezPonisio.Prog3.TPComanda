@@ -35,7 +35,9 @@ class Usuario
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
     $consulta = $objAccesoDatos->prepararConsulta(
       "SELECT
+      id,
       usuario,
+      clave,
       id_categoria
       FROM usuarios
       WHERE fecha_baja IS NULL"
