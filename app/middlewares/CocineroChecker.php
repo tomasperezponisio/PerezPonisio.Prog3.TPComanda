@@ -4,7 +4,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Slim\Psr7\Response;
 
-class VerificarTokenMiddleware
+class CocineroCheckerMiddleware
 {
   public function __invoke(Request $request, RequestHandler $handler): Response
   {
@@ -15,8 +15,7 @@ class VerificarTokenMiddleware
 
     try {
       $header = $request->getHeaderLine('Authorization');
-      if ($header != null)
-      {
+      if ($header != null) {
         $token = trim(explode("Bearer", $header)[1]);
       }
       AutentificadorJWT::verificarToken($token);
@@ -25,8 +24,13 @@ class VerificarTokenMiddleware
       $payload = json_encode(array('error' => $e->getMessage()));
     }
 
-    if ($esValido) {
+    if (
+      $esValido &&
+      AutentificadorJWT::ObtenerData($token)->id_categoria == "4"
+    ) {
       $response = $handler->handle($request);
+    } else {
+      $payload = json_encode(array("Error" => "No tiene permisos de: Cocinero"));
     }
 
     $response->getBody()->write($payload);

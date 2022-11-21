@@ -1,5 +1,7 @@
 <?php
 
+include_once "UsuarioConCategoria.php";
+
 class Usuario
 {
   public $id;
@@ -9,18 +11,11 @@ class Usuario
 
   public function crearUsuario()
   {
+    // var_dump($this->usuario);
+    // var_dump($this->clave);
+    // var_dump($this->id_categoria);
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDatos->prepararConsulta(
-      "INSERT INTO usuarios
-      (usuario,
-      clave,
-      id_categoria)
-      VALUES
-      (:usuario,
-      :clave
-      :id_categoria)"
-    );
-
+    $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO usuarios (usuario, clave, id_categoria) VALUES (:usuario,:clave, :id_categoria)");
     $consulta->bindValue(':usuario', $this->usuario, PDO::PARAM_STR);
     $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
     $consulta->bindValue(':clave', $claveHash);
@@ -35,16 +30,18 @@ class Usuario
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
     $consulta = $objAccesoDatos->prepararConsulta(
       "SELECT
-      id,
-      usuario,
-      clave,
-      id_categoria
+      usuarios.id,
+      usuarios.usuario,
+      usuarios.clave,
+      categoria_usuarios.categoria
       FROM usuarios
-      WHERE fecha_baja IS NULL"
+      JOIN categoria_usuarios
+      ON usuarios.id_categoria = categoria_usuarios.id
+      WHERE usuarios.fecha_baja IS NULL"
     );
     $consulta->execute();
 
-    return $consulta->fetchAll(PDO::FETCH_CLASS, 'Usuario');
+    return $consulta->fetchAll(PDO::FETCH_CLASS, 'UsuarioConCategoria');
   }
 
   public static function obtenerUsuario($usuario)
@@ -52,7 +49,9 @@ class Usuario
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
     $consulta = $objAccesoDatos->prepararConsulta(
       "SELECT
+      id,
       usuario,
+      clave,
       id_categoria
       FROM usuarios
       WHERE usuario = :usuario"

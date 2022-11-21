@@ -15,17 +15,28 @@ require __DIR__ . '/../vendor/autoload.php';
 
 require_once './db/AccesoDatos.php';
 
-require_once './middlewares/Login.php';
+// Middlewares de datos
 require_once './middlewares/UsuarioYCategoriaChecker.php';
 require_once './middlewares/TipoYDescripcionChecker.php';
-require_once './middlewares/MozoChecker.php';
 require_once './middlewares/IdChecker.php';
-require_once './middlewares/VerificarToken.php';
 
+// Middlewares de acceso
+require_once './middlewares/VerificarToken.php';
+require_once './middlewares/Login.php';
+require_once './middlewares/SocioChecker.php';
+require_once './middlewares/MozoChecker.php';
+require_once './middlewares/CerveceroChecker.php';
+require_once './middlewares/BartenderChecker.php';
+require_once './middlewares/CocineroChecker.php';
+
+// Controllers
 require_once './controllers/UsuarioController.php';
 require_once './controllers/ProductoController.php';
 require_once './controllers/MesaController.php';
 require_once './controllers/PedidoController.php';
+require_once './controllers/ProductoCerveceroController.php';
+require_once './controllers/ProductoBartenderController.php';
+require_once './controllers/ProductoCocineroController.php';
 
 // Load ENV
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -44,7 +55,10 @@ $app->addBodyParsingMiddleware();
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->get('[/]', \UsuarioController::class . ':TraerTodos');
   $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
-  $group->post('[/]', \UsuarioController::class . ':CargarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new MozoCheckerMiddleware());
+  $group->post('[/]', \UsuarioController::class . ':CargarUno')
+    ->add(new UsuarioYCategoriaCheckerMiddleware())
+    ->add(new SocioCheckerMiddleware())
+    ->add(new VerificarTokenMiddleware());
   $group->put('[/]', \UsuarioController::class . ':ModificarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new IdCheckerMiddleware());
   $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
   $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware());
@@ -58,10 +72,28 @@ $app->group('/jwt', function (RouteCollectorProxy $group) {
 $app->group('/productos', function (RouteCollectorProxy $group) {
   $group->get('[/]', \ProductoController::class . ':TraerTodos');
   $group->get('/{id}', \ProductoController::class . ':TraerUno');
-  $group->post('[/]', \ProductoController::class . ':CargarUno')->add(new VerificarTokenMiddleware());
+  $group->post('[/]', \ProductoController::class . ':CargarUno');
   $group->put('[/]', \ProductoController::class . ':ModificarUno');
   $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
-});
+})->add(new VerificarTokenMiddleware());
+
+// Cerveceros
+$app->group('/cerveceros', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \ProductoCerveceroController::class . ':TraerTodos');  
+  $group->put('[/]', \ProductoCerveceroController::class . ':ModificarUno');
+})->add(new CerveceroCheckerMiddleware())->add(new VerificarTokenMiddleware());
+
+// Bartenders
+$app->group('/bartenders', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \ProductoBartenderController::class . ':TraerTodos');
+  $group->put('[/]', \ProductoBartenderController::class . ':ModificarUno');
+})->add(new BartenderCheckerMiddleware())->add(new VerificarTokenMiddleware());
+
+// Cocineros
+$app->group('/cocineros', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \ProductoCocineroController::class . ':TraerTodos');
+  $group->put('[/]', \ProductoCocineroController::class . ':ModificarUno');
+})->add(new CocineroCheckerMiddleware())->add(new VerificarTokenMiddleware());
 
 // Mesa
 $app->group('/mesas', function (RouteCollectorProxy $group) {
@@ -70,14 +102,13 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
   $group->post('[/]', \MesaController::class . ':CargarUno');
   $group->put('[/]', \MesaController::class . ':ModificarUno');
   $group->delete('[/]', \MesaController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
-});
+})->add(new VerificarTokenMiddleware());
 
 // Pedidos
 $app->group('/pedidos', function (RouteCollectorProxy $group) {
   $group->get('[/]', \PedidoController::class . ':TraerTodos');
   $group->get('/{usuario}', \PedidoController::class . ':TraerUno');
   $group->post('[/]', \PedidoController::class . ':CargarUno')
-                ->add(new UsuarioYCategoriaCheckerMiddleware())
                 ->add(new MozoCheckerMiddleware())
                 ->add(new VerificarTokenMiddleware());
   $group->put('[/]', \PedidoController::class . ':ModificarUno')

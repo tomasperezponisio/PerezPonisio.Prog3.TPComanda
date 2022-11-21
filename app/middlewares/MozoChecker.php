@@ -9,24 +9,31 @@ class MozoCheckerMiddleware
   public function __invoke(Request $request, RequestHandler $handler): Response
   {
     $response = new Response();
-    // traigo los parametros
-    $parametros = $request->getParsedBody();
-    // me fijo si me mandaron perfil
-    if (isset($parametros['id_categoria'])) {
-      // me fijo que no esten vacios
-      if ($parametros['id_categoria'] != "") {
-        // me fijo si el perfil es admin
-        if ($parametros['id_categoria'] == 1) {
-          $response = $handler->handle($request);
-        } else {
-          $response->getBody()->write("No tiene permisos de: mozo");
-        }
-      } else {
-        $response->getBody()->write("Error Campo vacio ");
+    $esValido = false;
+    $payload = "";
+    $token = "";
+
+    try {
+      $header = $request->getHeaderLine('Authorization');
+      if ($header != null) {
+        $token = trim(explode("Bearer", $header)[1]);
       }
-    } else {
-      $response->getBody()->write("Datos incompletos");
+      AutentificadorJWT::verificarToken($token);
+      $esValido = true;
+    } catch (Exception $e) {
+      $payload = json_encode(array('error' => $e->getMessage()));
     }
-    return $response;
+
+    if (
+      $esValido &&
+      AutentificadorJWT::ObtenerData($token)->id_categoria == "1"
+    ) {
+      $response = $handler->handle($request);
+    } else {
+      $payload = json_encode(array("Error" => "No tiene permisos de: Mozo"));
+    }
+
+    $response->getBody()->write($payload);
+    return $response->withHeader('Content-Type', 'application/json');
   }
 }

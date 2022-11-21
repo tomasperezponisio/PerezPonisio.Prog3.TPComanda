@@ -84,4 +84,61 @@ class Pedido
     }
   }
 
+  public static function registrarProductosPorPedido($id_pedido, $id_producto)
+  {
+    $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "INSERT INTO productos_por_pedido
+      (id_producto,
+      id_pedido)
+      VALUES 
+      (:id_producto,
+      :id_pedido)"
+    );
+
+    $consulta->bindValue(':id_producto', $id_producto, PDO::PARAM_INT);
+    $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+    $consulta->execute();
+
+    return $objAccesoDatos->obtenerUltimoId();
+  }
+
+  public static function registrarPedidosDeUsuario($id_pedido, $id_usuario)
+  {
+    $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "INSERT INTO pedidos_de_usuario
+      (id_usuario,
+      id_pedido)
+      VALUES 
+      (:id_usuario,
+      :id_pedido)"
+    );
+
+    $consulta->bindValue(':id_usuario', $id_usuario, PDO::PARAM_INT);
+    $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+    $consulta->execute();
+
+    return $objAccesoDatos->obtenerUltimoId();
+  }
+
+  public static function registrarPedidosEnMesa($id_pedido, $id_mesa)
+  {
+    $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "INSERT INTO pedidos_por_mesa
+      (id_mesa,
+      id_pedido)
+      VALUES 
+      (:id_mesa,
+      :id_pedido)"
+    );
+
+    $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_INT);
+    $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+    $consulta->execute();
+
+    return $objAccesoDatos->obtenerUltimoId();
+  }
+
 }

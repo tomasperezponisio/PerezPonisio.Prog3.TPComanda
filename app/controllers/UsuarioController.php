@@ -10,11 +10,13 @@ class UsuarioController extends Usuario implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $usuario = $parametros['usuario'];
-    $id_categoria = $parametros['id_categoria'];
+    $clave = $parametros['clave'];
+    $id_categoria = intval($parametros['id_categoria']);    
 
     // Creamos el usuario
     $usr = new Usuario();
     $usr->usuario = $usuario;
+    $usr->clave = $clave;
     $usr->id_categoria = $id_categoria;
     $usr->crearUsuario();
 
@@ -100,18 +102,20 @@ class UsuarioController extends Usuario implements IApiUsable
     $usr = new Usuario();
     $usr->usuario = $parametros['usuario'];
     $usr->clave = $parametros['clave'];
+    
     // Traigo un usuario de la BD con el nombre de usuario que recibi
     $usuario = Usuario::obtenerUsuario($usr->usuario);
+    // var_dump($usuario);
 
     // y comparo nombre y clave
     if (
       $usuario->usuario == $usr->usuario &&
-      $usuario->clave == $usr->clave
+      password_verify($usr->clave, $usuario->clave) 
     ) {
       //----------------------------------------------------
       // devolver un JWT
-      //---------------------------------------------------
-      $datos = array('usuario' => $usr->usuario);
+      //---------------------------------------------------      
+      $datos = array('id' => $usuario->id, 'usuario' => $usuario->usuario, 'id_categoria' => $usuario->id_categoria);
       $token = AutentificadorJWT::CrearToken($datos);
       $payload = json_encode(array('jwt' => $token));
       $response->getBody()->write($payload);

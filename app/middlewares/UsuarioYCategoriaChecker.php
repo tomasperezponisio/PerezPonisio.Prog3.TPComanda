@@ -10,15 +10,16 @@ class UsuarioYCategoriaCheckerMiddleware
   {
     $response = new Response();
     // traigo los parametros
-    $parametros = $request->getParsedBody();
+    $parametros = $request->getParsedBody();    
     // me fijo si me mandaron usuario y clave
-    if (isset($parametros['id_categoria']) && isset($parametros['usuario'])) {
+    if (isset($parametros['usuario']) && isset($parametros['clave']) && isset($parametros['id_categoria'])) {
+      $id_categoria = $parametros['id_categoria'];
       // me fijo que no esten vacios
-      if ($parametros['id_categoria'] != "" && $parametros['usuario'] != "") {
+      if ($parametros['usuario'] != "" && $parametros['clave'] != "" && $parametros['id_categoria'] != "") {
         if (ctype_alpha($parametros['usuario'])) {
-          if (is_numeric($parametros['id_categoria'])) {
-            $id_categoria = intval($parametros['id_categoria']);
-            // me fijo que la categoria sea una de las opciones validas
+          if (is_numeric($id_categoria)) {            
+            $id_categoria = intval($id_categoria);
+            // var_dump($id_categoria);
             if (
               $id_categoria === 0 ||  // socio
               $id_categoria === 1 ||  // mozo

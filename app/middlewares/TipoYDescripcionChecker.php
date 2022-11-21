@@ -18,7 +18,7 @@ class TipoYDescripcionCheckerMiddleware
       if ($id_tipo != "" && $id_tipo != "") {
         // me fijo que la categoria sea una opcion valida
         if (is_numeric($id_tipo)) {
-          $id_tipo = intval($id_tipo);
+          $id_tipo = intval($id_tipo);          
           if (
             $id_tipo === 0 ||  // cerveza
             $id_tipo === 1 ||  // trago
