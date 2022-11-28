@@ -4,6 +4,7 @@ require_once './models/Producto.php';
 require_once './models/Mesa.php';
 require_once './interfaces/IApiUsable.php';
 require_once './utils/AutentificadorJWT.php';
+require_once './utils/GestorArchivos.php';
 
 class PedidoController extends Pedido implements IApiUsable
 {
@@ -15,7 +16,7 @@ class PedidoController extends Pedido implements IApiUsable
     $codigo_para_cliente = $parametros["datosPedido"][0]["codigo_para_cliente"];
     // cada pedido comienza con pedido 0 (En preparacion)
     $id_estado = intval($parametros["datosPedido"][0]["id_estado"]);
-    $id_mesa = intval($parametros["datosPedido"][0]["id_mesa"]);    
+    $id_mesa = intval($parametros["datosPedido"][0]["id_mesa"]);
 
     // Creamos el pedido
     $pedido = new Pedido();
@@ -40,7 +41,7 @@ class PedidoController extends Pedido implements IApiUsable
     // Registramos el pedido al mozo que lo creó
     $token = "";
     $header = $request->getHeaderLine('Authorization');
-    $token = trim(explode("Bearer", $header)[1]);    
+    $token = trim(explode("Bearer", $header)[1]);
     $id_usuario =  AutentificadorJWT::ObtenerData($token)->id;
     Pedido::registrarPedidosDeUsuario($id_pedido, $id_usuario);
 
@@ -56,32 +57,45 @@ class PedidoController extends Pedido implements IApiUsable
       ->withHeader('Content-Type', 'application/json');
   }
 
-  public function TraerUno($request, $response, $args)
-  {
-    // Buscamos pedido por id
-    $id = $args['id'];
-    $pedido = Pedido::obtenerPedido($id);
-    $payload = json_encode($pedido);
-
-    if ($payload != "false") {
-      if (Pedido::verificarId($id)) {
-        $response->getBody()->write($payload);
-      } else {
-        $response->getBody()->write("Usuario eliminado");
-      }
-    } else {
-      $response->getBody()->write("Usuario inexistente");
-    }
-    return $response
-      ->withHeader('Content-Type', 'application/json');
-  }
-
   public function TraerTodos($request, $response, $args)
-  {
+  {    
     $lista = Pedido::obtenerTodos();
     $payload = json_encode(array("lista pedidos" => $lista));
 
     $response->getBody()->write($payload);
+    return $response
+      ->withHeader('Content-Type', 'application/json');
+  }
+
+  public function TraerUno($request, $response, $args)
+  {
+    // Buscamos productos por id de pedido
+    $id_pedido = $args['id_pedido'];
+
+    // Mostramos la info de un pedido
+    $pedido = Pedido::obtenerPedido($id_pedido);
+
+    // mostramos la info de los productos asociados a ese pedido
+    $lista = Producto::traerProductosPorPedido($id_pedido);
+    array_unshift($lista, $pedido);
+    array_unshift($lista, "DATOS DEL PEDIDO");
+    array_splice($lista, 2, 0, "PRODUCTOS DEL PEDIDO");
+    // Traemos el mayor tiempo de finalizacion de los productos y lo mostramos
+    // en el pedido al que pertenece
+    $tiempo_finalizacion = Producto::traerTiempoMasAltoPorPedido($id_pedido);
+    array_splice($lista, 2, 0, "TIEMPO DE FINALIZACION: " . $tiempo_finalizacion . " min");    
+
+    $payload = json_encode($lista);
+
+    if ($payload != "false") {
+      if (Pedido::verificarId($id_pedido)) {
+        $response->getBody()->write($payload);
+      } else {
+        $response->getBody()->write("Pedido eliminado");
+      }
+    } else {
+      $response->getBody()->write("Pedido inexistente");
+    }
     return $response
       ->withHeader('Content-Type', 'application/json');
   }
@@ -92,10 +106,24 @@ class PedidoController extends Pedido implements IApiUsable
 
     $id = $parametros['id'];
     if (Pedido::verificarId($id)) {
-      $id_estado = $parametros['id_estado'];
-
-      Pedido::modificarPedido($id, $id_estado);
-      $payload = json_encode(array("mensaje" => "Estado de pedido modificado con exito"));
+      $id_estado = intval($parametros['id_estado']);
+      Mesa::traerIdMesaPorIdPedido($id);
+      if ($id_estado == 1 || $id_estado == 2) {
+        if (Producto::verificarProductosListosPorPedido($id)) {
+          Pedido::modificarPedido($id, $id_estado);
+          if ($id_estado == 2){
+            // si el estado de pedido cambia a ENTREGADO
+            // el estado de la mesa cambia a CON CLIENTE COMIENDO
+            Mesa::modificarMesa(Mesa::traerIdMesaPorIdPedido($id), 2);
+          }
+          $payload = json_encode(array("mensaje" => "Estado de pedido modificado con exito"));
+        } else {
+          $payload = json_encode(array("mensaje" => "Error - Hay productos en preparacion"));
+        }
+      } else {
+        Pedido::modificarPedido($id, $id_estado);
+        $payload = json_encode(array("mensaje" => "Estado de pedido modificado con exito"));
+      }
     } else {
       $payload = json_encode(array("mensaje" => "Error - ID Inexistente"));
     }
@@ -122,4 +150,22 @@ class PedidoController extends Pedido implements IApiUsable
     return $response
       ->withHeader('Content-Type', 'application/json');
   }
+
+  public function CargarFoto($request, $response, $args)
+  {
+    $parametros = $request->getParsedBody();
+    $id = $parametros['id'];
+    $rutaImagenes = "./Imagenes/";
+    $gestor = new GestorArchivos($rutaImagenes);
+    
+    $path_foto = $gestor->GuardarFoto("pedido_numero_".$id);   
+
+    $payload = json_encode(array("mensaje" => "Foto cargada con exito"));
+
+    $response->getBody()->write($payload);
+    return $response
+      ->withHeader('Content-Type', 'application/json');
+  }
+
+  
 }

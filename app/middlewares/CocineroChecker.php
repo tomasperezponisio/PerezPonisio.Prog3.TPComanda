@@ -19,6 +19,7 @@ class CocineroCheckerMiddleware
         $token = trim(explode("Bearer", $header)[1]);
       }
       AutentificadorJWT::verificarToken($token);
+      $id_categoria = AutentificadorJWT::ObtenerData($token)->id_categoria;
       $esValido = true;
     } catch (Exception $e) {
       $payload = json_encode(array('error' => $e->getMessage()));
@@ -26,7 +27,7 @@ class CocineroCheckerMiddleware
 
     if (
       $esValido &&
-      AutentificadorJWT::ObtenerData($token)->id_categoria == "4"
+      ($id_categoria == "0" || $id_categoria == "4")
     ) {
       $response = $handler->handle($request);
     } else {

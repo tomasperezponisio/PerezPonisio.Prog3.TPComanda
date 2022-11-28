@@ -21,9 +21,12 @@ class ProductoBartenderController extends Producto implements IApiUsable
 
   public function TraerTodos($request, $response, $args)
   {
-    $id_estado = intval($_GET['id_estado']);
-
-    $lista = Producto::traerProductosEstadoTipo($id_estado, 1);
+    if (!isset($_GET['id_estado'])) {
+      $lista = Producto::traerProductosPorTipo(1);
+    } else {
+      $id_estado = intval($_GET['id_estado']);  
+      $lista = Producto::traerProductosEstadoTipo($id_estado, 1);
+    }
     $payload = json_encode(array("lista productos: BARTENDERS" => $lista));
 
     $response->getBody()->write($payload);

@@ -1,5 +1,7 @@
 <?php
 
+include_once 'ProductoDTO.php';
+
 class Producto
 {
   public $id;
@@ -112,10 +114,29 @@ class Producto
     $objAccesoDato = AccesoDatos::obtenerInstancia();
     $consulta = $objAccesoDato->prepararConsulta("SELECT id_tipo FROM productos WHERE id = :id");
     $consulta->bindValue(':id', $id, PDO::PARAM_INT);
-    $consulta->execute();    
-    return $consulta->fetch();  
+    $consulta->execute();
+    return $consulta->fetch();
   }
-  
+
+  public static function traerProductosPorTipo($id_tipo)
+  {
+    $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT id,
+      id_tipo,
+      descripcion,
+      tiempo_de_finalizacion,
+      id_estado
+      FROM productos
+      WHERE id_tipo = :id_tipo"
+    );
+    $consulta->bindValue(':id_tipo', $id_tipo, PDO::PARAM_INT);
+    $consulta->execute();
+
+    return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
+  }
+
+
   public static function traerProductosEstadoTipo($id_estado, $id_tipo)
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
@@ -127,11 +148,61 @@ class Producto
       id_estado
       FROM productos
       WHERE id_tipo = :id_tipo
-      AND id_estado = :id_estado");
-      $consulta->bindValue(':id_tipo', $id_tipo, PDO::PARAM_INT);
-      $consulta->bindValue(':id_estado', $id_estado, PDO::PARAM_INT);
+      AND id_estado = :id_estado"
+    );
+    $consulta->bindValue(':id_tipo', $id_tipo, PDO::PARAM_INT);
+    $consulta->bindValue(':id_estado', $id_estado, PDO::PARAM_INT);
     $consulta->execute();
 
     return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
-  }  
+  }
+
+  public static function traerProductosPorPedido($id_pedido)
+  {
+    $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT
+      productos.id,     
+      tipo_productos.tipo,
+      productos.descripcion,
+      productos.tiempo_de_finalizacion,
+      estado_productos.estado
+      
+      FROM productos_por_pedido
+      INNER JOIN productos ON productos_por_pedido.id_producto = productos.id
+      INNER JOIN pedidos ON productos_por_pedido.id_pedido = pedidos.id
+      INNER JOIN tipo_productos ON tipo_productos.id = productos.id_tipo
+      INNER JOIN estado_productos ON estado_productos.id = productos.id_estado
+      WHERE pedidos.id = :id_pedido;"
+    );
+    $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+    $consulta->execute();
+
+    return $consulta->fetchAll(PDO::FETCH_CLASS, 'ProductoDTO');
+  }
+
+  public static function verificarProductosListosPorPedido($id_pedido)
+  {
+    $retorno  = true;
+    $lista = Producto::traerProductosPorPedido($id_pedido);    
+    foreach ($lista as $item) {
+      // id_estado 2 es "listo para servir"
+      if ($item->estado != "Listo para servir"){
+        $retorno = false;        
+      }
+    }
+    return $retorno;
+  }
+
+  public static function traerTiempoMasAltoPorPedido($id_pedido)
+  {
+    $tiempo_mayor_finalizacion = 0;
+    $lista = Producto::traerProductosPorPedido($id_pedido);    
+    foreach ($lista as $item) {      
+      if ($item->tiempo_de_finalizacion > $tiempo_mayor_finalizacion){
+        $tiempo_mayor_finalizacion = $item->tiempo_de_finalizacion;
+      }
+    }
+    return $tiempo_mayor_finalizacion;
+  }
 }

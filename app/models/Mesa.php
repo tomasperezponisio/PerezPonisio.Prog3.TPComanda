@@ -1,4 +1,5 @@
 <?php
+include_once 'MesaDTO.php';
 
 class Mesa
 {
@@ -49,7 +50,7 @@ class Mesa
     );
     $consulta->execute();
 
-    return $consulta->fetchAll(PDO::FETCH_CLASS, 'Mesa');
+    return $consulta->fetchAll(PDO::FETCH_CLASS, 'MesaDTO');
   }
 
   public static function modificarMesa($id, $id_estado)
@@ -63,6 +64,20 @@ class Mesa
     $consulta->bindValue(':id_estado', $id_estado, PDO::PARAM_INT);
     $consulta->bindValue(':id', $id, PDO::PARAM_INT);
     $consulta->execute();
+  }
+
+  public static function traerIdMesaPorIdPedido($id_pedido)
+  {
+    $objAccesoDato = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDato->prepararConsulta(
+      "SELECT mesas.id
+      FROM mesas
+      JOIN pedidos_por_mesa ON pedidos_por_mesa.id_mesa = mesas.id
+      JOIN pedidos on pedidos_por_mesa.id_pedido = pedidos.id
+      WHERE pedidos.id = :id_estado;"
+    );
+    $consulta->bindValue(':id_estado', $id_pedido, PDO::PARAM_INT);      
+    return $consulta->execute();
   }
 
   public static function borrarMesa($id)

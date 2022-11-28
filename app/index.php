@@ -68,6 +68,16 @@ $app->group('/jwt', function (RouteCollectorProxy $group) {
   $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware());
 })->add(new VerificarTokenMiddleware());
 
+// Pedidos
+$app->group('/pedidos', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \PedidoController::class . ':TraerTodos');
+  $group->get('/{id_pedido}', \PedidoController::class . ':TraerUno');
+  $group->post('[/]', \PedidoController::class . ':CargarUno');
+  $group->post('/foto', \PedidoController::class . ':CargarFoto');
+  $group->put('[/]', \PedidoController::class . ':ModificarUno');
+  $group->delete('[/]', \PedidoController::class . ':BorrarUno');  
+})->add(new MozoCheckerMiddleware())->add(new VerificarTokenMiddleware());
+
 // Producto
 $app->group('/productos', function (RouteCollectorProxy $group) {
   $group->get('[/]', \ProductoController::class . ':TraerTodos');
@@ -77,17 +87,17 @@ $app->group('/productos', function (RouteCollectorProxy $group) {
   $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
 })->add(new VerificarTokenMiddleware());
 
-// Cerveceros
-$app->group('/cerveceros', function (RouteCollectorProxy $group) {
-  $group->get('[/]', \ProductoCerveceroController::class . ':TraerTodos');  
-  $group->put('[/]', \ProductoCerveceroController::class . ':ModificarUno');
-})->add(new CerveceroCheckerMiddleware())->add(new VerificarTokenMiddleware());
-
 // Bartenders
 $app->group('/bartenders', function (RouteCollectorProxy $group) {
   $group->get('[/]', \ProductoBartenderController::class . ':TraerTodos');
   $group->put('[/]', \ProductoBartenderController::class . ':ModificarUno');
 })->add(new BartenderCheckerMiddleware())->add(new VerificarTokenMiddleware());
+
+// Cerveceros
+$app->group('/cerveceros', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \ProductoCerveceroController::class . ':TraerTodos');  
+  $group->put('[/]', \ProductoCerveceroController::class . ':ModificarUno');
+})->add(new CerveceroCheckerMiddleware())->add(new VerificarTokenMiddleware());
 
 // Cocineros
 $app->group('/cocineros', function (RouteCollectorProxy $group) {
@@ -104,21 +114,7 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
   $group->delete('[/]', \MesaController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
 })->add(new VerificarTokenMiddleware());
 
-// Pedidos
-$app->group('/pedidos', function (RouteCollectorProxy $group) {
-  $group->get('[/]', \PedidoController::class . ':TraerTodos');
-  $group->get('/{usuario}', \PedidoController::class . ':TraerUno');
-  $group->post('[/]', \PedidoController::class . ':CargarUno')
-                ->add(new MozoCheckerMiddleware())
-                ->add(new VerificarTokenMiddleware());
-  $group->put('[/]', \PedidoController::class . ':ModificarUno')
-                ->add(new UsuarioYCategoriaCheckerMiddleware())
-                ->add(new IdCheckerMiddleware());
-  $group->delete('[/]', \PedidoController::class . ':BorrarUno')
-                ->add(new IdCheckerMiddleware());
-  $group->post('/login', \PedidoController::class . ':Login')
-                ->add(new LoginMiddleware());
-});
+
 
 $app->get(
   '[/]',

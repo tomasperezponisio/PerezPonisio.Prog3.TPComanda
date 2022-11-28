@@ -1,4 +1,5 @@
 <?php
+include_once 'PedidoDTO.php';
 
 class Pedido
 {
@@ -32,19 +33,36 @@ class Pedido
   public static function obtenerTodos()
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM pedidos");
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT 
+      pedidos.id,
+      pedidos.nombre_cliente,
+      pedidos.codigo_para_cliente,
+      estado_pedido.descripcion as 'estado'
+      FROM pedidos
+      JOIN estado_pedido ON pedidos.id_estado = estado_pedido.id");
     $consulta->execute();
 
-    return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
+    return $consulta->fetchAll(PDO::FETCH_CLASS, 'PedidoDTO');
   }
 
   public static function obtenerPedido($id)
   {
     $objAccesoDatos = AccesoDatos::obtenerInstancia();
-    $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM pedidos WHERE id = :id");
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT 
+      pedidos.id,
+      pedidos.nombre_cliente,
+      pedidos.codigo_para_cliente,
+      estado_pedido.descripcion as 'estado'
+      FROM pedidos
+      JOIN estado_pedido
+      ON pedidos.id_estado = estado_pedido.id
+      WHERE pedidos.id = :id"
+    );
     $consulta->bindValue(':id', $id, PDO::PARAM_INT);
     $consulta->execute();
-    return $consulta->fetchObject('Pedido');
+    return $consulta->fetchObject('PedidoDTO');
   }
 
   public static function modificarPedido($id, $id_estado)

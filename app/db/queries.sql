@@ -55,3 +55,36 @@ CREATE TABLE IF NOT EXISTS `pedidos_por_mesa` (
   `id_pedido` int(4) NOT NULL,  
   PRIMARY KEY(id)
 ) AUTO_INCREMENT = 1;
+
+CREATE TABLE IF NOT EXISTS `estado_pedido` (
+  `id` int(4) AUTO_INCREMENT,
+  `descripcion` varchar(250) NOT NULL,    
+  PRIMARY KEY(id)
+);
+
+INSERT INTO `estado_pedido` (`descripcion`) VALUES
+('En preparación'),
+('Listo para servir'),
+('Entregado');
+
+CREATE TABLE IF NOT EXISTS `tipo_productos` (
+  `id` int(4) AUTO_INCREMENT,
+  `tipo` varchar(250) NOT NULL,    
+  PRIMARY KEY(id)
+) AUTO_INCREMENT = 0;
+
+INSERT INTO `tipo_productos` (`tipo`) VALUES
+('Cervezaa'),
+('Trago'),
+('Comida');
+
+CREATE TABLE IF NOT EXISTS `estado_productos` (
+  `id` int(4) AUTO_INCREMENT,
+  `estado` varchar(250) NOT NULL,    
+  PRIMARY KEY(id)
+) AUTO_INCREMENT = 0;
+
+INSERT INTO `estado_productos` (`estado`) VALUES
+('No ingresado en cocina'),
+('En preparación'),
+('Listo para servir');

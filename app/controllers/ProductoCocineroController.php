@@ -20,11 +20,14 @@ class ProductoCocineroController extends Producto implements IApiUsable
   }
 
   public function TraerTodos($request, $response, $args)
-  {    
-    $id_estado = intval($_GET['id_estado']);    
-
-    $lista = Producto::traerProductosEstadoTipo($id_estado, 2);    
-    $payload = json_encode(array("lista productos: COCINEROS" => $lista));
+  { 
+    if (!isset($_GET['id_estado'])) {
+      $lista = Producto::traerProductosPorTipo(2);
+    } else {
+      $id_estado = intval($_GET['id_estado']);  
+      $lista = Producto::traerProductosEstadoTipo($id_estado, 2);
+    }
+    $payload = json_encode(array("lista productos: COCINEROS" => $lista));   
 
     $response->getBody()->write($payload);
     return $response

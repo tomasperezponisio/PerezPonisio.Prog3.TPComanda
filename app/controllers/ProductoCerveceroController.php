@@ -21,11 +21,12 @@ class ProductoCerveceroController extends Producto implements IApiUsable
 
   public function TraerTodos($request, $response, $args)
   {
-    
-    $id_estado = intval($_GET['id_estado']);
-    // $id_tipo =  intval($_GET['id_tipo']);
-
-    $lista = Producto::traerProductosEstadoTipo($id_estado, 0);    
+    if (!isset($_GET['id_estado'])) {
+      $lista = Producto::traerProductosPorTipo(0);
+    } else {
+      $id_estado = intval($_GET['id_estado']);  
+      $lista = Producto::traerProductosEstadoTipo($id_estado, 0);
+    }
     $payload = json_encode(array("lista productos: CERVECEROS" => $lista));
 
     $response->getBody()->write($payload);
