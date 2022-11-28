@@ -52,10 +52,19 @@ class MesaController extends Mesa implements IApiUsable
     $parametros = $request->getParsedBody();
 
     $id = $parametros['id'];
-    $id_estado = $parametros['id_estado'];    
-    Mesa::modificarMesa($id, $id_estado);
+    $id_estado = intval($parametros['id_estado']);    
 
-    $payload = json_encode(array("mensaje" => "Estado de mesa modificado con exito"));
+    $token = "";
+    $header = $request->getHeaderLine('Authorization');
+    $token = trim(explode("Bearer", $header)[1]);
+    $id_categoria =  AutentificadorJWT::ObtenerData($token)->id_categoria;
+  
+    if ($id_estado == 0 && $id_categoria !=0 ){
+      $payload = json_encode(array("Error" => "Solo los socios pueden cerrar una mesa"));
+    } else {
+      Mesa::modificarMesa($id, $id_estado);
+      $payload = json_encode(array("mensaje" => "Estado de mesa modificado con exito"));
+    }
 
     $response->getBody()->write($payload);
     return $response

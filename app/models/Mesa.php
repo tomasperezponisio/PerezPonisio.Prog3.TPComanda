@@ -74,10 +74,11 @@ class Mesa
       FROM mesas
       JOIN pedidos_por_mesa ON pedidos_por_mesa.id_mesa = mesas.id
       JOIN pedidos on pedidos_por_mesa.id_pedido = pedidos.id
-      WHERE pedidos.id = :id_estado;"
+      WHERE pedidos.id = :id_pedido;"
     );
-    $consulta->bindValue(':id_estado', $id_pedido, PDO::PARAM_INT);      
-    return $consulta->execute();
+    $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);    
+    $consulta->execute();
+    return $consulta->fetch();
   }
 
   public static function borrarMesa($id)

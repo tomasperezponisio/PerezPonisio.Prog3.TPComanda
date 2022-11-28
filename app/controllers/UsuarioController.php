@@ -11,7 +11,7 @@ class UsuarioController extends Usuario implements IApiUsable
 
     $usuario = $parametros['usuario'];
     $clave = $parametros['clave'];
-    $id_categoria = intval($parametros['id_categoria']);    
+    $id_categoria = intval($parametros['id_categoria']);
 
     // Creamos el usuario
     $usr = new Usuario();
@@ -102,7 +102,7 @@ class UsuarioController extends Usuario implements IApiUsable
     $usr = new Usuario();
     $usr->usuario = $parametros['usuario'];
     $usr->clave = $parametros['clave'];
-    
+
     // Traigo un usuario de la BD con el nombre de usuario que recibi
     $usuario = Usuario::obtenerUsuario($usr->usuario);
     // var_dump($usuario);
@@ -110,7 +110,7 @@ class UsuarioController extends Usuario implements IApiUsable
     // y comparo nombre y clave
     if (
       $usuario->usuario == $usr->usuario &&
-      password_verify($usr->clave, $usuario->clave) 
+      password_verify($usr->clave, $usuario->clave)
     ) {
       //----------------------------------------------------
       // devolver un JWT
@@ -123,6 +123,43 @@ class UsuarioController extends Usuario implements IApiUsable
     } else {
       $response->getBody()->write("Error en clave y/o usuario");
     }
+    return $response
+      ->withHeader('Content-Type', 'application/json');
+  }
+
+  public function DescargarCSV($request, $response, $args)
+  {
+    $lista = Usuario::obtenerTodos();
+    $payload = json_encode($lista);
+
+    header('Content-Type: application/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename=usuarios.csv');
+    ob_end_clean();
+
+    //creo el csv con los datos
+    if (file_exists('./usuarios.csv')) {
+      $data = json_decode($payload, true);
+      $fp = fopen("usuarios.csv", 'w');
+      foreach ($data as $row) {
+        fputcsv($fp, $row);
+      }
+      fclose($fp);
+    }
+    readfile('./usuarios.csv');
+    //ob_flush();
+
+    return $response
+      ->withHeader(
+        'Content-Type',
+        'application/csv'
+      );
+  }
+
+  public function CargarDatosDesdeCSV($request, $response, $args)
+  {
+    $payload = json_encode(array('Mensaje' => 'Archivo cargado con exito'));
+    $response->getBody()->write($payload);
+
     return $response
       ->withHeader('Content-Type', 'application/json');
   }

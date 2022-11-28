@@ -37,6 +37,7 @@ require_once './controllers/PedidoController.php';
 require_once './controllers/ProductoCerveceroController.php';
 require_once './controllers/ProductoBartenderController.php';
 require_once './controllers/ProductoCocineroController.php';
+require_once './controllers/ClienteController.php';
 
 // Load ENV
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -54,14 +55,18 @@ $app->addBodyParsingMiddleware();
 // Usuarios
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
   $group->get('[/]', \UsuarioController::class . ':TraerTodos');
-  $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
+  // $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
+  $group->get('/backupusuarios', \UsuarioController::class . ':DescargarCSV')
+    ->add(new SocioCheckerMiddleware())
+    ->add(new VerificarTokenMiddleware()); 
   $group->post('[/]', \UsuarioController::class . ':CargarUno')
     ->add(new UsuarioYCategoriaCheckerMiddleware())
     ->add(new SocioCheckerMiddleware())
     ->add(new VerificarTokenMiddleware());
   $group->put('[/]', \UsuarioController::class . ':ModificarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new IdCheckerMiddleware());
   $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
-  $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware());
+  $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware()); 
+  $group->post('/backupusuarios', \UsuarioController::class . ':CargarDatosDesdeCSV'); 
 });
 
 $app->group('/jwt', function (RouteCollectorProxy $group) {
@@ -113,6 +118,11 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
   $group->put('[/]', \MesaController::class . ':ModificarUno');
   $group->delete('[/]', \MesaController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
 })->add(new VerificarTokenMiddleware());
+
+// Cliente
+$app->group('/clientes', function (RouteCollectorProxy $group) {  
+  $group->get('[/]', \ClienteController::class . ':TraerUno');
+});
 
 
 

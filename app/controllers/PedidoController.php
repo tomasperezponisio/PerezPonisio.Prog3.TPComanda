@@ -106,15 +106,15 @@ class PedidoController extends Pedido implements IApiUsable
 
     $id = $parametros['id'];
     if (Pedido::verificarId($id)) {
-      $id_estado = intval($parametros['id_estado']);
-      Mesa::traerIdMesaPorIdPedido($id);
+      $id_estado = intval($parametros['id_estado']);      
+      $id_mesa = Mesa::traerIdMesaPorIdPedido($id);
       if ($id_estado == 1 || $id_estado == 2) {
         if (Producto::verificarProductosListosPorPedido($id)) {
           Pedido::modificarPedido($id, $id_estado);
-          if ($id_estado == 2){
+          if ($id_estado == 2){            
             // si el estado de pedido cambia a ENTREGADO
             // el estado de la mesa cambia a CON CLIENTE COMIENDO
-            Mesa::modificarMesa(Mesa::traerIdMesaPorIdPedido($id), 2);
+            Mesa::modificarMesa($id_mesa["id"], 2);
           }
           $payload = json_encode(array("mensaje" => "Estado de pedido modificado con exito"));
         } else {

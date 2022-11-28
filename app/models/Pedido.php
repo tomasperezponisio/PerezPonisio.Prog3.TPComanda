@@ -159,4 +159,13 @@ class Pedido
     return $objAccesoDatos->obtenerUltimoId();
   }
 
+  public static function traerIdPorCodigoDeCliente($codigo_para_cliente)
+  {
+    $objAccesoDato = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDato->prepararConsulta("SELECT pedidos.id FROM pedidos WHERE pedidos.codigo_para_cliente = :codigo_para_cliente");
+    $consulta->bindValue(':codigo_para_cliente', $codigo_para_cliente, PDO::PARAM_INT);
+    $consulta->execute();
+    return $consulta->fetch();
+  }
+
 }
