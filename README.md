@@ -1,4 +1,4 @@
-# Tomás Pérez Ponisio - TP La Comanda
+# Tomás Pérez Ponisio - La Comanda
 
 ## Requerimentos de la aplicación
 
