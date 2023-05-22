@@ -2,7 +2,7 @@
 
 ## Requerimentos de la aplicación
 
-Debemos realizar un sistema para un restaurante que tiene cuatro sectores: barra de tragos y vino, patio cervecero, cocina y candy bar.
+Debemos realizar un sistema para un restaurante que tiene tres sectores: ***barra de tragos y vino***, ***patio cervecero*** y ***cocina***.
 
 Los trabajadores estan diferenciados entre los ***bartender*** , los ***cerveceros***, los ***cocineros*** y los ***mozos***, también estamos los ***socios*** del local.
 
@@ -11,6 +11,23 @@ Los mozos toman los pedidos y manejan las mesas. Al dar de alta un pedido se le 
 Los bartenders, cerveceros y cocineros solo pueden ver y cambiar el estado y tiempo de finalización de los productos que le correspondan.
 
 Cuando todos los productos asociados a un pedido estan listos para entregar, el mozo cambia el estado del pedido a ‘listo para servir’. Con el pedido listo el mozo lo entrega y le cambia el estado a ‘entregado’ finalizando la vida del pedido, la mesa cambia su estado a ‘con cliente comiendo’. Luego el mozo cambia el estado de la mesa a ‘con cliente pagando’. Finalmente algún socio cierra la mesa. 
+
+## Endpoints de la API
+
+Hay varios endpoints para las diferentes necesidades de la aplicación:
+- /usuarios - Para el manejo de los trabajadores, alta, baja, modificación, back up de la base de usuarios.
+- /login - Para que los trabajdores se logueen al sistema.
+- /pedidos - Para el manejo de los pedidos, alta, baja y modificación.
+- /productos - Para el manejo de los productos de los distintos sectores del restaurante.
+- /bartenders - Para que los bartenders puedan ver los pedidos que tienen que preparar y actualizar el estado de los mismos.
+- /cerveceros - Para que los cerveceros puedan ver los pedidos que tienen que preparar y actualizar el estado de los mismos.
+- /cocineros - Para que los bartenders puedan ver los pedidos que tienen que preparar y actualizar el estado de los mismos.
+- /mesas - Para ver que mesas estan libres, cuales ocupadas, manejar la sala.
+- /clientes - Para que los clientes puedan ver el estado de su pedido
+
+## Middlewares
+
+En todos los endpoints hay algun middleware sea de verificación de tipo de trabajador, o si es un socio, si esta logueado al sistema o no, para checkear la info que al realizar un pedido, etc.
 
 ## Diagrama de BBDD
 
