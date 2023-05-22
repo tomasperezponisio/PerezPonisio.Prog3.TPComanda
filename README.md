@@ -2,9 +2,13 @@
 
 ## Requerimentos de la aplicación
 
+Debemos realizar un sistema para un restaurante que tiene cuatro sectores: barra de tragos y vino, patio cervecero, cocina y candy bar.
+Los trabajadores estan diferenciados entre los ***bartender*** , los ***cerveceros***, los ***cocineros*** y los ***mozos***, también estamos los ***socios*** del local.
 Los mozos toman los pedidos y manejan las mesas. Al dar de alta un pedido se le carga el nombre del cliente, se le asocia una mesa disponible (mesa que esté cerrada), se dan de alta los productos, se asocian al pedido y la mesa se pone ‘como cliente esperando pedido’.
 Los bartenders, cerveceros y cocineros solo pueden ver y cambiar el estado y tiempo de finalización de los productos que le correspondan.
 Cuando todos los productos asociados a un pedido estan listos para entregar, el mozo cambia el estado del pedido a ‘listo para servir’. Con el pedido listo el mozo lo entrega y le cambia el estado a ‘entregado’ finalizando la vida del pedido, la mesa cambia su estado a ‘con cliente comiendo’. Luego el mozo cambia el estado de la mesa a ‘con cliente pagando’. Finalmente algún socio cierra la mesa. 
+
+## Diagrama de BBDD
 
 https://drawsql.app/teams/tomas-perez-ponisios-team/diagrams/la-comanda
 
