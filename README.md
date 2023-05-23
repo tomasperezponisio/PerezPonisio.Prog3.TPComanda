@@ -1,4 +1,4 @@
-# Tomás Pérez Ponisio - La Comanda (API Rest con PHP Slim Framework)
+# Tomás Pérez Ponisio - La Comanda
 
 ## Requerimientos de la aplicación
 
@@ -25,14 +25,122 @@ Hay varios endpoints para las diferentes necesidades de la aplicación:
 - /mesas - Para ver que mesas estan libres, cuales ocupadas, manejar la sala.
 - /clientes - Para que los clientes puedan ver el estado de su pedido
 
+```php
+# Endpoints para los usuarios
+// Usuarios
+$app->group('/usuarios', function (RouteCollectorProxy $group) {
+  $group->get('[/]', \UsuarioController::class . ':TraerTodos');
+  // $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
+  $group->get('/backupusuarios', \UsuarioController::class . ':DescargarCSV')
+    ->add(new SocioCheckerMiddleware())
+    ->add(new VerificarTokenMiddleware()); 
+  $group->post('[/]', \UsuarioController::class . ':CargarUno')
+    ->add(new UsuarioYCategoriaCheckerMiddleware())
+    ->add(new SocioCheckerMiddleware())
+    ->add(new VerificarTokenMiddleware());
+  $group->put('[/]', \UsuarioController::class . ':ModificarUno')->add(new UsuarioYCategoriaCheckerMiddleware())->add(new IdCheckerMiddleware());
+  $group->delete('[/]', \UsuarioController::class . ':BorrarUno')->add(new IdCheckerMiddleware());
+  $group->post('/login', \UsuarioController::class . ':Login')->add(new LoginMiddleware()); 
+  $group->post('/backupusuarios', \UsuarioController::class . ':CargarDatosDesdeCSV'); 
+});
+```
+
 ## Middlewares
 
 En todos los endpoints hay algun middleware sea de verificación de tipo de trabajador, o si es un socio, si esta logueado al sistema o no, para checkear la info que al realizar un pedido, etc.
+
+```php
+# Middleware de login, chequea que manden los datos de usuario y contraseña
+# y que no esten vacios
+class LoginMiddleware
+{
+  public function __invoke(Request $request, RequestHandler $handler): Response
+  {
+    $response = new Response();
+    // traigo los parametros
+    $parametros = $request->getParsedBody();
+    // me fijo si me mandaron usuario y clave
+    if (isset($parametros['clave']) && isset($parametros['usuario'])) {
+      // me fijo que no esten vacios
+      if ($parametros['clave'] == "" || $parametros['usuario'] == "") {
+        $response->getBody()->write("Error Campo vacio");
+      } else {
+        // si no estan vacios paso el request
+        $response = $handler->handle($request);
+      }
+    } else {
+      // aviso que faltaron datos
+      $response->getBody()->write("Datos incompletos");
+    }
+    return $response;
+  }
+}
+```
+
+```php
+# Middleware que chequea que el request venga de un socio
+# Verifica que venga un token válido, y que el mismo sea de socio
+# En caso contrario avisa que el requester no tiene permiso de socio
+class SocioCheckerMiddleware
+{
+  public function __invoke(Request $request, RequestHandler $handler): Response
+  {
+    $response = new Response();
+    $esValido = false;
+    $payload = "";
+    $token = "";
+
+    try {
+      $header = $request->getHeaderLine('Authorization');
+      if ($header != null) {
+        $token = trim(explode("Bearer", $header)[1]);
+      }
+      AutentificadorJWT::verificarToken($token);
+      $esValido = true;
+    } catch (Exception $e) {
+      $payload = json_encode(array('error' => $e->getMessage()));
+    }
+
+    if (
+      $esValido &&
+      AutentificadorJWT::ObtenerData($token)->id_categoria == "0"
+    ) {
+      $response = $handler->handle($request);
+    } else {
+      $payload = json_encode(array("Error" => "No tiene permisos de: Socio"));
+    }
+
+    $response->getBody()->write($payload);
+    return $response->withHeader('Content-Type', 'application/json');
+  }
+}
+```
 
 ## Diagrama de BBDD
 
 https://drawsql.app/teams/tomas-perez-ponisios-team/diagrams/la-comanda
 
+```php
+# Uno de los models de producto, trae los productos por tipo (cerveza, comida, etc)
+public static function traerProductosPorTipo($id_tipo)
+  {
+    $objAccesoDatos = AccesoDatos::obtenerInstancia();
+    $consulta = $objAccesoDatos->prepararConsulta(
+      "SELECT id,
+      id_tipo,
+      descripcion,
+      tiempo_de_finalizacion,
+      id_estado
+      FROM productos
+      WHERE id_tipo = :id_tipo"
+    );
+    $consulta->bindValue(':id_tipo', $id_tipo, PDO::PARAM_INT);
+    $consulta->execute();
+
+    return $consulta->fetchAll(PDO::FETCH_CLASS, 'Producto');
+  }
+
+```
 
 ## Usuarios
 
