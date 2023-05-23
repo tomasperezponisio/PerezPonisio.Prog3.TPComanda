@@ -1,4 +1,4 @@
-# Tomás Pérez Ponisio - La Comanda (API Rest con PHP)
+# Tomás Pérez Ponisio - La Comanda (API Rest con PHP Slim Framework)
 
 ## Requerimientos de la aplicación
 
