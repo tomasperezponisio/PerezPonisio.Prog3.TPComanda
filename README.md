@@ -1,4 +1,4 @@
-# Tomás Pérez Ponisio - La Comanda
+# Tomás Pérez Ponisio - La Comanda (APIR rest con PHP (Slim Framework))
 
 ## Requerimientos de la aplicación
 
