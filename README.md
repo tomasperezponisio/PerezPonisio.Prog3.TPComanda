@@ -1,4 +1,4 @@
-# Tomás Pérez Ponisio - La Comanda (API Rest)
+# Tomás Pérez Ponisio - La Comanda (API Rest con PHP)
 
 ## Requerimientos de la aplicación
 
