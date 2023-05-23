@@ -1,6 +1,6 @@
 # Tomás Pérez Ponisio - La Comanda
 
-## Requerimentos de la aplicación
+## Requerimientos de la aplicación
 
 Debemos realizar un sistema para un restaurante que tiene tres sectores: ***barra de tragos y vino***, ***patio cervecero*** y ***cocina***.
 
