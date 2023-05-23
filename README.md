@@ -1,4 +1,4 @@
-# Tomás Pérez Ponisio - La Comanda
+# Tomás Pérez Ponisio - La Comanda (API Rest)
 
 ## Requerimientos de la aplicación
 
